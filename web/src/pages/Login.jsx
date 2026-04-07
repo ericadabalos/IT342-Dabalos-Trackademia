@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../AuthContext";
 
 function Login() {
@@ -7,14 +7,18 @@ function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const location = useLocation();
   const { login } = useAuth();
+
+  // Extract the success message if it exists
+  const successMessage = location.state?.message;
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
 
     try {
-      const response = await fetch("http://localhost:8084/api/auth/login", {
+      const response = await fetch("http://localhost:8085/api/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -41,6 +45,13 @@ function Login() {
         <h2>Trackademia</h2>
         <p>Welcome to Your Productive Hub</p>
 
+        {/* Display the success message in green if the user just registered */}
+        {successMessage && (
+          <p className="success" style={{ color: "green", marginBottom: "15px" }}>
+            {successMessage}
+          </p>
+        )}
+
         <form onSubmit={handleLogin}>
           <input
             type="email"
@@ -56,14 +67,14 @@ function Login() {
             onChange={(e) => setPassword(e.target.value)}
             required
           />
-          <button type="submit">Sign In</button>
+          <button type="submit">Login</button>
         </form>
 
         {error && <p className="error">{error}</p>}
 
         <p className="link">
           Don't have an account? 
-          <span onClick={() => navigate("/register")}> Sign Up</span>
+          <span onClick={() => navigate("/register")} style={{ cursor: "pointer" }}> Sign Up</span>
         </p>
       </div>
     </div>
