@@ -6,6 +6,7 @@ import TaskCard from "./TaskCard";
 import { formatDeadline, LOG_ICONS, SUBJECT_COLORS, PRIORITY_STYLES } from "./constants"; 
 import LoadingScreen from "./LoadingScreen";
 import GlobalStyles from "./GlobalStyles";
+import { LogFactory } from "./LogFactory"; // 👈 Your factory is imported here!
 
 const INITIAL_TASKS = [
   { id: 1, title: "Database Systems Assignment", description: "Complete ER diagram and normalization up to 3NF", deadline: "2026-03-22", status: "pending", subject: "DBMS", priority: "high" },
@@ -51,7 +52,11 @@ export default function Dashboard() {
     setTimeout(() => {
       const task = tasks.find(t => t.id === id);
       setTasks(prev => prev.map(t => t.id === id ? { ...t, status: "done", completedAt: now12() } : t));
-      setLogs(prev => [{ id: Date.now(), text: `${task.title} marked as done`, time: now12(), type: "complete" }, ...prev]);
+      
+      // 👇 PATTERN APPLIED: Using the Factory to create the log! 👇
+      const newLog = LogFactory.createLog("COMPLETE", task.title);
+      setLogs(prev => [newLog, ...prev]);
+      
       setCompletingId(null);
     }, 600);
   }
@@ -59,7 +64,10 @@ export default function Dashboard() {
   function handleDelete(id) {
     const task = tasks.find(t => t.id === id);
     setTasks(prev => prev.filter(t => t.id !== id));
-    setLogs(prev => [{ id: Date.now(), text: `Deleted: ${task.title}`, time: now12(), date: "Today", type: "delete" }, ...prev]);
+    
+    // 👇 PATTERN APPLIED: Using the Factory to create the log! 👇
+    const newLog = LogFactory.createLog("DELETE", task.title);
+    setLogs(prev => [newLog, ...prev]);
   }
 
   function handleAddTask(e) {
@@ -67,7 +75,11 @@ export default function Dashboard() {
     if (!newTask.title || !newTask.deadline) return;
     const task = { id: Date.now(), ...newTask, status: "pending" };
     setTasks(prev => [task, ...prev]);
-    setLogs(prev => [{ id: Date.now(), text: `New task added: ${newTask.title}`, time: now12(), type: "add" }, ...prev]);
+    
+    // 👇 PATTERN APPLIED: Using the Factory to create the log! 👇
+    const newLog = LogFactory.createLog("ADD", newTask.title);
+    setLogs(prev => [newLog, ...prev]);
+    
     setNewTask({ title: "", description: "", deadline: "", subject: "CS", priority: "medium" });
     setShowModal(false);
   }
