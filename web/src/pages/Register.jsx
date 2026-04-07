@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../AuthContext";
+// useAuth import removed because we are no longer auto-logging in
 
 function Register() {
   const [firstname, setFirstname] = useState("");
@@ -9,26 +9,25 @@ function Register() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
-  const { login } = useAuth();
 
   const handleRegister = async (e) => {
     e.preventDefault();
     setError("");
 
     try {
-      const response = await fetch("http://localhost:8084/api/auth/register", {
+      const response = await fetch("http://localhost:8085/api/auth/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, password, firstname, lastname }),
+        body: JSON.stringify({ email, password, firstname, lastname, role: "USER" }),
       });
 
       const data = await response.json();
 
       if (data.success) {
-        login(data.data.user, data.data.accessToken);
-        navigate("/dashboard");
+        // Redirect to sign-in page (/) and pass a success message in the state
+        navigate("/", { state: { message: "Registration successful! Please sign in." } });
       } else {
         setError(data.error.message);
       }
@@ -77,14 +76,14 @@ function Register() {
             required
           />
 
-          <button type="submit">Sign Up</button>
+          <button type="submit">Register</button>
         </form>
 
         {error && <p className="error">{error}</p>}
 
         <p className="link">
           Already have an account?
-          <span onClick={() => navigate("/")}> Sign In</span>
+          <span onClick={() => navigate("/")} style={{ cursor: "pointer" }}> Sign In</span>
         </p>
       </div>
     </div>
