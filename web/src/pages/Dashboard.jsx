@@ -6,14 +6,8 @@ import TaskCard from "./TaskCard";
 import { formatDeadline, LOG_ICONS, SUBJECT_COLORS, PRIORITY_STYLES } from "./constants"; 
 import LoadingScreen from "./LoadingScreen";
 import GlobalStyles from "./GlobalStyles";
-import { LogFactory } from "./LogFactory"; // 👈 Your factory is imported here!
-
-const INITIAL_TASKS = [
-  { id: 1, title: "Database Systems Assignment", description: "Complete ER diagram and normalization up to 3NF", deadline: "2026-03-22", status: "pending", subject: "DBMS", priority: "high" },
-  { id: 2, title: "Calculus Problem Set #4", description: "Solve integration problems chapters 7-9", deadline: "2026-03-24", status: "pending", subject: "Math", priority: "medium" },
-  { id: 3, title: "OOP Lab Report", description: "Document the inheritance and polymorphism exercise", deadline: "2026-03-21", status: "pending", subject: "CS", priority: "high" },
-  { id: 4, title: "English Essay Draft", description: "Write 1500-word argumentative essay on digital ethics", deadline: "2026-03-28", status: "pending", subject: "English", priority: "low" },
-];
+import { LogFactory } from "./LogFactory"; 
+import { apiService } from "../services/apiService";
 
 const INITIAL_LOGS = [
   { id: 1, text: "Logged into Trackademia", time: "8:02 AM", type: "auth" },
@@ -26,62 +20,115 @@ function now12() {
   return new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
 }
 
+function checkStatus(task) {
+  if (task.status === "completed") return "completed";
+  
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  const deadlineDate = new Date(task.deadline + "T00:00:00");
+  if (deadlineDate < today) {
+    return "overdue";
+  }
+  
+  return "pending";
+}
+
 export default function Dashboard() {
-  const [tasks, setTasks] = useState(INITIAL_TASKS);
+  const [tasks, setTasks] = useState([]); 
   const [logs, setLogs] = useState(INITIAL_LOGS);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [completingId, setCompletingId] = useState(null);
+  
+  //new state to track if we are editing an existing task
+  const [editingTaskId, setEditingTaskId] = useState(null); 
+  
   const [newTask, setNewTask] = useState({ title: "", description: "", deadline: "", subject: "CS", priority: "medium" });
   
   const logRef = useRef(null);
   const navigate = useNavigate();
   const { logout } = useAuth();
 
-  useEffect(() => { setTimeout(() => setLoading(false), 1200); }, []);
+  useEffect(() => {
+    apiService.getTasks()
+      .then(data => {
+        setTasks(data);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error("Error fetching tasks:", err);
+        setLoading(false);
+      });
+  }, []);
 
   useEffect(() => {
     if (logRef.current) logRef.current.scrollTop = 0;
   }, [logs]);
 
-  const pendingTasks = tasks.filter(t => t.status === "pending");
-  const completedCount = tasks.filter(t => t.status === "done").length;
+  const pendingTasks = tasks.filter(t => t.status !== "completed");
+  const completedCount = tasks.filter(t => t.status === "completed").length;
 
-  function handleComplete(id) {
+  async function handleComplete(id) {
     setCompletingId(id);
-    setTimeout(() => {
-      const task = tasks.find(t => t.id === id);
-      setTasks(prev => prev.map(t => t.id === id ? { ...t, status: "done", completedAt: now12() } : t));
+    try {
+      const updatedTask = await apiService.completeTask(id);
       
-      // 👇 PATTERN APPLIED: Using the Factory to create the log! 👇
-      const newLog = LogFactory.createLog("COMPLETE", task.title);
+      setTasks(prev => prev.map(t => t.id === id ? updatedTask : t));
+      
+      const newLog = LogFactory.createLog("COMPLETE", updatedTask.title);
       setLogs(prev => [newLog, ...prev]);
-      
+    } catch (error) {
+      console.error("Failed to complete task", error);
+    } finally {
       setCompletingId(null);
-    }, 600);
+    }
   }
   
-  function handleDelete(id) {
-    const task = tasks.find(t => t.id === id);
-    setTasks(prev => prev.filter(t => t.id !== id));
-    
-    // 👇 PATTERN APPLIED: Using the Factory to create the log! 👇
-    const newLog = LogFactory.createLog("DELETE", task.title);
-    setLogs(prev => [newLog, ...prev]);
+  //new function to handle clicking the pencil icon
+  function handleEditClick(task) {
+    setEditingTaskId(task.id);      // Remember which task we are editing
+    setNewTask(task);               // Fill the form with the existing data
+    setShowModal(true);             // Open the modal
   }
 
-  function handleAddTask(e) {
+  //helper to close modal and reset form
+  function closeModal() {
+    setShowModal(false);
+    setEditingTaskId(null);
+    setNewTask({ title: "", description: "", deadline: "", subject: "CS", priority: "medium" });
+  }
+
+  //updated to handle both ADDING and EDITING
+  async function handleAddTask(e) {
     e.preventDefault();
     if (!newTask.title || !newTask.deadline) return;
-    const task = { id: Date.now(), ...newTask, status: "pending" };
-    setTasks(prev => [task, ...prev]);
-    
-    // 👇 PATTERN APPLIED: Using the Factory to create the log! 👇
-    const newLog = LogFactory.createLog("ADD", newTask.title);
-    setLogs(prev => [newLog, ...prev]);
-    
-    setNewTask({ title: "", description: "", deadline: "", subject: "CS", priority: "medium" });
-    setShowModal(false);
+
+    try {
+      if (editingTaskId) {
+        // --- EDIT EXISTING TASK ---
+        const updatedTask = await apiService.updateTask(editingTaskId, newTask);
+        
+        // Update it in our state array
+        setTasks(prev => prev.map(t => t.id === editingTaskId ? updatedTask : t));
+        
+        // Log the edit
+        const newLog = LogFactory.createLog("ADD", `Edited: ${updatedTask.title}`);
+        setLogs(prev => [newLog, ...prev]);
+      } else {
+        // --- ADD NEW TASK ---
+        const savedTask = await apiService.createTask(newTask);
+        
+        setTasks(prev => [savedTask, ...prev]);
+        
+        const newLog = LogFactory.createLog("ADD", savedTask.title);
+        setLogs(prev => [newLog, ...prev]);
+      }
+      
+      closeModal(); // Reset form and close
+    } catch (error) {
+      console.error("Failed to save task", error);
+    }
   }
 
   const handleLogout = () => {
@@ -122,15 +169,18 @@ export default function Dashboard() {
             </div>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-              {pendingTasks.map(task => (
-                <TaskCard 
-                  key={task.id} 
-                  task={task} 
-                  onComplete={handleComplete} 
-                  onDelete={handleDelete} 
-                  completingId={completingId} 
-                />
-              ))}
+              {pendingTasks.map(task => {
+                const currentStatus = checkStatus(task); 
+                return (
+                  <TaskCard 
+                    key={task.id} 
+                    task={{ ...task, displayStatus: currentStatus }} 
+                    onComplete={handleComplete} 
+                    onEdit={handleEditClick} 
+                    completingId={completingId} 
+                  />
+                );
+              })}
             </div>
           )}
         </section>
@@ -159,13 +209,16 @@ export default function Dashboard() {
         </aside>
       </main>
 
-      {/* ADD TASK MODAL */}
+      {/* ADD/EDIT TASK MODAL */}
       {showModal && (
-        <div className="modal-overlay" onClick={e => e.target === e.currentTarget && setShowModal(false)}>
+        <div className="modal-overlay" onClick={e => e.target === e.currentTarget && closeModal()}>
           <div className="fade-in" style={{ background: "#0d1220", border: "1px solid #1e2a45", borderRadius: 16, padding: 28, width: 420, maxWidth: "90vw" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 22 }}>
-              <h2 style={{ fontFamily: "'Syne',sans-serif", fontSize: 18, fontWeight: 800, color: "#e2eaf8" }}>Add New Task</h2>
-              <button onClick={() => setShowModal(false)} style={{ background: "none", border: "none", color: "#4a6080", cursor: "pointer", fontSize: 18 }}>✕</button>
+              {/*dynamic modal title*/}
+              <h2 style={{ fontFamily: "'Syne',sans-serif", fontSize: 18, fontWeight: 800, color: "#e2eaf8" }}>
+                {editingTaskId ? "Edit Task" : "Add New Task"}
+              </h2>
+              <button onClick={closeModal} style={{ background: "none", border: "none", color: "#4a6080", cursor: "pointer", fontSize: 18 }}>✕</button>
             </div>
             <form onSubmit={handleAddTask} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
               <div>
@@ -202,8 +255,9 @@ export default function Dashboard() {
                   })}
                 </div>
               </div>
+              {/*dynamic Submit Button*/}
               <button type="submit" style={{ marginTop: 8, background: "linear-gradient(135deg,#3b82f6,#6366f1)", border: "none", borderRadius: 10, color: "#fff", padding: "12px", fontSize: 13, fontFamily: "'DM Mono',monospace", cursor: "pointer", fontWeight: 500, letterSpacing: 0.5 }}>
-                ＋ Add Task
+                {editingTaskId ? "Save Changes" : "＋ Add Task"}
               </button>
             </form>
           </div>

@@ -1,8 +1,8 @@
-const BASE_URL = "http://localhost:8080/api";
+const BASE_URL = "http://localhost:8086/api";
 
 // helper function completely hidden from the UI components
 function getHeaders() {
-  const token = localStorage.getItem("trackademia_token");
+  const token = localStorage.getItem("token");
   return {
     "Content-Type": "application/json",
     ...(token ? { "Authorization": `Bearer ${token}` } : {})
@@ -42,6 +42,17 @@ export const apiService = {
     const response = await fetch(`${BASE_URL}/tasks/${taskId}/complete`, {
       method: "PUT",
       headers: getHeaders()
+    });
+    if (!response.ok) throw new Error("Failed to update task");
+    return response.json();
+  },
+
+
+  updateTask: async (taskId, updatedTask) => {
+    const response = await fetch(`${BASE_URL}/tasks/${taskId}`, {
+      method: "PUT",
+      headers: getHeaders(),
+      body: JSON.stringify(updatedTask)
     });
     if (!response.ok) throw new Error("Failed to update task");
     return response.json();
