@@ -45,6 +45,7 @@ export default function Sidebar({ activePage, handleLogout }) {
           <span style={{ fontSize: 16 }}>🏠</span> Home
         </button>
 
+
         {/*History Button*/}
         <button 
           onClick={() => navigate("/history")} 
@@ -52,7 +53,21 @@ export default function Sidebar({ activePage, handleLogout }) {
         >
           <span style={{ fontSize: 16 }}>🕓</span> History
         </button>
-      </nav>
+
+        {/*My Tasks Button*/}
+        <button 
+          onClick={() => navigate("/tasks")} 
+          style={{ width: "100%", display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", borderRadius: 8, color: activePage === "tasks" ? "#60a5fa" : "#4a6080", background: activePage === "tasks" ? "#1a233a" : "none", border: "none", borderLeft: activePage === "tasks" ? "3px solid #60a5fa" : "3px solid transparent", fontSize: 14, marginBottom: 4, textAlign: "left", cursor: "pointer", fontWeight: activePage === "tasks" ? 600 : 400 }}
+        >
+          <span style={{ fontSize: 16 }}>✔️</span> My Tasks
+        </button>
+        {/*Study Button*/}
+        <button 
+          onClick={() => navigate("/study")} 
+          style={{ width: "100%", display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", borderRadius: 8, color: activePage === "study" ? "#60a5fa" : "#4a6080", background: activePage === "study" ? "#1a233a" : "none", border: "none", borderLeft: activePage === "study" ? "3px solid #60a5fa" : "3px solid transparent", fontSize: 14, marginBottom: 4, textAlign: "left", cursor: "pointer", fontWeight: activePage === "study" ? 600 : 400 }}
+        >
+          <span style={{ fontSize: 16 }}>📚</span> Study
+        </button>      </nav>
 
       <div style={{ padding: "16px 12px", borderTop: "1px solid #1a2236" }}>
         <button onClick={handleLogout} style={{ width: "100%", display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", borderRadius: 8, color: "#f87171", background: "none", border: "none", cursor: "pointer", fontSize: 14, fontWeight: 500 }}>
