@@ -91,11 +91,11 @@ export default function Dashboard() {
     }
   }
   
-  //new function to handle clicking the pencil icon
+
   function handleEditClick(task) {
-    setEditingTaskId(task.id);      // Remember which task we are editing
-    setNewTask(task);               // Fill the form with the existing data
-    setShowModal(true);             // Open the modal
+    setEditingTaskId(task.id);      
+    setNewTask(task);               
+    setShowModal(true);           
   }
 
   //helper to close modal and reset form

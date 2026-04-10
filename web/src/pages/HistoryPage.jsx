@@ -85,7 +85,7 @@ export default function HistoryPage() {
       <Sidebar activePage="history" handleLogout={handleLogout} />
 
       {/* MAIN CONTENT */}
-      <main style={{ marginLeft: 220, flex: 1, padding: "32px 40px", overflowY: "auto", height: "100vh" }}>
+      <main style={{ marginLeft: 220, flex: 1, padding: "32px 40px", overflowY: "hidden", height: "100vh" }}>
         <div style={{ marginBottom: 28 }}>
           <h1 style={{ fontFamily: "'Syne',sans-serif", fontSize: 28, fontWeight: 800, color: "#e2eaf8", letterSpacing: -0.5 }}>History</h1>
           <div style={{ color: "#4a6080", fontSize: 13, marginTop: 4 }}>Full log of your activity and completed tasks</div>
@@ -129,24 +129,28 @@ export default function HistoryPage() {
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
               <h2 style={{ fontSize: 15, fontWeight: 700, color: "#e2eaf8" }}>Activity Log</h2>
             </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-              {Object.entries(byDate).map(([date, entries]) => (
-                <div key={date}>
-                  <div style={{ color: "#4a6080", fontSize: 11, letterSpacing: 1, textTransform: "uppercase", marginBottom: 12, fontWeight: 600 }}>{date}</div>
-                  <div style={{ position: "relative" }}>
-                    {entries.map((activity, i) => (
-                      <div key={activity.id} className="fade-in" style={{ display: "flex", gap: 12, alignItems: "flex-start", position: "relative", paddingLeft: 26, paddingBottom: i < entries.length - 1 ? 16 : 0 }}>
-                        {i < entries.length - 1 && <div style={{ position: "absolute", left: 9, top: 20, width: 2, bottom: 0, background: "#1e2a45" }} />}
-                        <div style={{ position: "absolute", left: 4, top: 6, width: 12, height: 12, borderRadius: "50%", background: dotColor[activity.type] || "#4a6080", border: "2px solid #0a0e1a", flexShrink: 0 }} />
-                        <div style={{ background: "#0d1220", border: "1px solid #1e2a45", borderRadius: 8, padding: "10px 14px", flex: 1 }}>
-                          <div style={{ color: "#8da4c8", fontSize: 12, lineHeight: 1.5, fontWeight: 500 }}>{activity.text}</div>
-                          <div style={{ color: "#4a6080", fontSize: 11, marginTop: 4 }}>{formatTime(activity.timestamp)}</div>
+            <div style={{ maxHeight: "calc(100vh - 230px)", overflowY: "auto", paddingRight: 4, paddingBottom: 12 }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+                {Object.entries(byDate).map(([date, entries]) => (
+                  <div key={date}>
+                    <div style={{ position: "sticky", top: 0, zIndex: 2, background: "#0a0e1a", padding: "8px 0" }}>
+                      <div style={{ color: "#4a6080", fontSize: 11, letterSpacing: 1, textTransform: "uppercase", marginBottom: 12, fontWeight: 600 }}>{date}</div>
+                    </div>
+                    <div style={{ position: "relative" }}>
+                      {entries.map((activity, i) => (
+                        <div key={activity.id} className="fade-in" style={{ display: "flex", gap: 12, alignItems: "flex-start", position: "relative", paddingLeft: 26, paddingBottom: i < entries.length - 1 ? 16 : 0 }}>
+                          {i < entries.length - 1 && <div style={{ position: "absolute", left: 9, top: 20, width: 2, bottom: 0, background: "#1e2a45" }} />}
+                          <div style={{ position: "absolute", left: 4, top: 6, width: 12, height: 12, borderRadius: "50%", background: dotColor[activity.type] || "#4a6080", border: "2px solid #0a0e1a", flexShrink: 0 }} />
+                          <div style={{ background: "#0d1220", border: "1px solid #1e2a45", borderRadius: 8, padding: "10px 14px", flex: 1 }}>
+                            <div style={{ color: "#8da4c8", fontSize: 12, lineHeight: 1.5, fontWeight: 500 }}>{activity.text}</div>
+                            <div style={{ color: "#4a6080", fontSize: 11, marginTop: 4 }}>{formatTime(activity.timestamp)}</div>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
 

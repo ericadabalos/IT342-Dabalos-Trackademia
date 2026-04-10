@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-// useAuth import removed because we are no longer auto-logging in
+
 
 function Register() {
   const [firstname, setFirstname] = useState("");
@@ -15,7 +15,7 @@ function Register() {
     setError("");
 
     try {
-      const response = await fetch("http://localhost:8085/api/auth/register", {
+      const response = await fetch("http://localhost:8086/api/auth/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
