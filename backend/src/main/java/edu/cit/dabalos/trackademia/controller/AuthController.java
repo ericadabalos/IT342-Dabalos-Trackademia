@@ -1,6 +1,7 @@
 package edu.cit.dabalos.trackademia.controller;
 
 import edu.cit.dabalos.trackademia.service.AuthService;
+import edu.cit.dabalos.trackademia.service.ActivityService;
 import edu.cit.dabalos.trackademia.dto.RegisterRequest;
 import edu.cit.dabalos.trackademia.dto.LoginRequest;
 import edu.cit.dabalos.trackademia.dto.AuthResponse;
@@ -17,6 +18,9 @@ public class AuthController {
     @Autowired
     private AuthService authService;
 
+    @Autowired
+    private ActivityService activityService;
+
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(@RequestBody RegisterRequest request) {
         AuthResponse response = authService.register(request);
@@ -31,6 +35,8 @@ public class AuthController {
     public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
         AuthResponse response = authService.login(request);
         if (response.isSuccess()) {
+            // Log the login activity
+            activityService.logLogin(request.getEmail());
             return ResponseEntity.ok(response);
         } else {
             return ResponseEntity.status(401).body(response);

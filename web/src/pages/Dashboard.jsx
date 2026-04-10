@@ -6,19 +6,9 @@ import TaskCard from "./TaskCard";
 import { formatDeadline, LOG_ICONS, SUBJECT_COLORS, PRIORITY_STYLES } from "./constants"; 
 import LoadingScreen from "./LoadingScreen";
 import GlobalStyles from "./GlobalStyles";
-import { LogFactory } from "./LogFactory"; 
+import { ActivityFeed } from "./ActivityFeed"; 
 import { apiService } from "../services/apiService";
 
-const INITIAL_LOGS = [
-  { id: 1, text: "Logged into Trackademia", time: "8:02 AM", type: "auth" },
-  { id: 2, text: "Physics Lab Report marked as done", time: "Yesterday 11:30 PM", type: "complete" },
-  { id: 3, text: "Joined Study Group: CS 201", time: "Yesterday 3:15 PM", type: "group" },
-  { id: 4, text: "Uploaded: midterm_notes.pdf to CS 201", time: "Yesterday 3:20 PM", type: "upload" },
-];
-
-function now12() {
-  return new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
-}
 
 function checkStatus(task) {
   if (task.status === "completed") return "completed";
@@ -36,7 +26,7 @@ function checkStatus(task) {
 
 export default function Dashboard() {
   const [tasks, setTasks] = useState([]); 
-  const [logs, setLogs] = useState(INITIAL_LOGS);
+  const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [completingId, setCompletingId] = useState(null);
@@ -50,21 +40,37 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const { logout } = useAuth();
 
+  // Helper function to reload activities
+  const reloadActivities = async () => {
+    try {
+      const updatedActivities = await apiService.getActivities();
+      setActivities(updatedActivities);
+    } catch (err) {
+      console.error("Error reloading activities:", err);
+    }
+  };
+
   useEffect(() => {
-    apiService.getTasks()
-      .then(data => {
-        setTasks(data);
+    const fetchData = async () => {
+      try {
+        const tasksData = await apiService.getTasks();
+        setTasks(tasksData);
+        
+        const activitiesData = await apiService.getActivities();
+        setActivities(activitiesData);
+      } catch (err) {
+        console.error("Error fetching data:", err);
+      } finally {
         setLoading(false);
-      })
-      .catch(err => {
-        console.error("Error fetching tasks:", err);
-        setLoading(false);
-      });
+      }
+    };
+    
+    fetchData();
   }, []);
 
   useEffect(() => {
     if (logRef.current) logRef.current.scrollTop = 0;
-  }, [logs]);
+  }, [activities]);
 
   const pendingTasks = tasks.filter(t => t.status !== "completed");
   const completedCount = tasks.filter(t => t.status === "completed").length;
@@ -76,8 +82,8 @@ export default function Dashboard() {
       
       setTasks(prev => prev.map(t => t.id === id ? updatedTask : t));
       
-      const newLog = LogFactory.createLog("COMPLETE", updatedTask.title);
-      setLogs(prev => [newLog, ...prev]);
+      // Reload activities to show the new completion log
+      await reloadActivities();
     } catch (error) {
       console.error("Failed to complete task", error);
     } finally {
@@ -111,19 +117,15 @@ export default function Dashboard() {
         
         // Update it in our state array
         setTasks(prev => prev.map(t => t.id === editingTaskId ? updatedTask : t));
-        
-        // Log the edit
-        const newLog = LogFactory.createLog("ADD", `Edited: ${updatedTask.title}`);
-        setLogs(prev => [newLog, ...prev]);
       } else {
         // --- ADD NEW TASK ---
         const savedTask = await apiService.createTask(newTask);
         
         setTasks(prev => [savedTask, ...prev]);
-        
-        const newLog = LogFactory.createLog("ADD", savedTask.title);
-        setLogs(prev => [newLog, ...prev]);
       }
+      
+      // Reload activities to show the new task log
+      await reloadActivities();
       
       closeModal(); // Reset form and close
     } catch (error) {
@@ -192,18 +194,8 @@ export default function Dashboard() {
               <h2 style={{ fontFamily: "'Inter', sans-serif", fontSize: 15, fontWeight: 700, color: "#e2eaf8" }}>Activity Feed</h2>
               <span style={{ background: "rgba(96,165,250,0.1)", color: "#60a5fa", fontSize: 10, padding: "4px 8px", borderRadius: 6, fontWeight: 700, fontFamily: "'Inter', sans-serif", letterSpacing: 0.5 }}>LIVE</span>
             </div>
-            <div ref={logRef} style={{ overflowY: "auto", flex: 1, display: "flex", flexDirection: "column", gap: 12 }}>
-              {logs.map((log, i) => (
-                <div key={log.id} className="fade-in" style={{ background: "#0d1220", border: "1px solid #1e2a45", borderRadius: 12, padding: "14px 16px", opacity: 1 - i * 0.05 }}>
-                  <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
-                    <span style={{ fontSize: 16, flexShrink: 0 }}>{LOG_ICONS[log.type] || "📌"}</span>
-                    <div>
-                      <div style={{ color: "#8da4c8", fontSize: 12, lineHeight: 1.5, fontFamily: "'Inter', sans-serif", fontWeight: 500 }}>{log.text}</div>
-                      <div style={{ color: "#4a6080", fontSize: 11, marginTop: 4 }}>{log.time}</div>
-                    </div>
-                  </div>
-                </div>
-              ))}
+            <div ref={logRef} style={{ overflowY: "auto", flex: 1, paddingRight: 8 }}>
+              <ActivityFeed activities={activities} />
             </div>
           </div>
         </aside>

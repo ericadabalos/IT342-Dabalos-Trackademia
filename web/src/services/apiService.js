@@ -1,4 +1,4 @@
-const BASE_URL = "http://localhost:8086/api";
+const BASE_URL = "http://localhost:8085/api";
 
 // helper function completely hidden from the UI components
 function getHeaders() {
@@ -55,6 +55,18 @@ export const apiService = {
       body: JSON.stringify(updatedTask)
     });
     if (!response.ok) throw new Error("Failed to update task");
+    return response.json();
+  },
+
+  getActivities: async () => {
+    const response = await fetch(`${BASE_URL}/activities`, { headers: getHeaders() });
+    if (!response.ok) throw new Error("Failed to fetch activities");
+    return response.json();
+  },
+
+  getCompletedTasks: async () => {
+    const response = await fetch(`${BASE_URL}/tasks/completed`, { headers: getHeaders() });
+    if (!response.ok) throw new Error("Failed to fetch completed tasks");
     return response.json();
   }
 };
