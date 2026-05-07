@@ -2,6 +2,7 @@ package edu.cit.dabalos.trackademia.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "tasks")
@@ -17,6 +18,14 @@ public class Task {
     private String subject;
     private String priority;
     private String status;
-    private String userEmail; 
+    private String userEmail;
+
+    @Column(nullable = false, columnDefinition = "boolean default false")
+    private boolean hideRequested = false;
+
+    @Column(nullable = false, columnDefinition = "boolean default false")
+    private boolean hidden = false;
+
+    private LocalDateTime hideRequestedAt;
 }
 

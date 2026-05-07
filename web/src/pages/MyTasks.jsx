@@ -18,10 +18,11 @@ const PageContainer = styled.div`
 const MainContent = styled.div`
   margin-left: 220px;
   flex: 1;
+  height: 100vh;
   padding: 40px;
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
+  overflow: hidden;
 `;
 
 const Header = styled.div`
@@ -75,12 +76,15 @@ const ContentWrapper = styled.div`
   display: grid;
   grid-template-columns: 2fr 1fr;
   gap: 40px;
+  min-height: 0;
+  flex: 1;
 `;
 
 const TasksSection = styled.div`
   display: flex;
   flex-direction: column;
   gap: 20px;
+  min-height: 0;
 `;
 
 const SectionTitle = styled.h2`
@@ -101,6 +105,9 @@ const TasksContainer = styled.div`
   border-radius: 12px;
   padding: 20px;
   min-height: 300px;
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
 `;
 
 const TaskPlaceholder = styled.div`
@@ -117,6 +124,7 @@ const ActivitySection = styled.div`
   display: flex;
   flex-direction: column;
   gap: 20px;
+  min-height: 0;
 `;
 
 const ActivityContainer = styled.div`
@@ -361,9 +369,7 @@ export default function MyTasks() {
                 </div>
                 <div style={{ flex: 1 }}>
                   <label style={{ color: "#4a6080", fontSize: 11, letterSpacing: 1, display: "block", marginBottom: 6, textTransform: "uppercase" }}>Subject</label>
-                  <select className="input-field" value={newTask.subject} onChange={e => setNewTask(p => ({...p, subject: e.target.value}))}>
-                    {["CS", "DBMS", "Math", "English", "Physics", "Other"].map(s => <option key={s}>{s}</option>)}
-                  </select>
+                  <input type="text" className="input-field" value={newTask.subject} onChange={e => setNewTask(p => ({...p, subject: e.target.value}))} placeholder="e.g. Math, CS, English" />
                 </div>
               </div>
               <div>

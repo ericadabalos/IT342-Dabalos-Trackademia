@@ -15,6 +15,8 @@ export default function GlobalStyles() {
       .done-btn:hover { background: rgba(74,222,128,0.1) !important; border-color: #4ade80 !important; color: #4ade80 !important; }
       .del-btn { transition: all 0.2s; cursor: pointer; }
       .del-btn:hover { background: rgba(239,68,68,0.15) !important; border-color: #f87171 !important; color: #f87171 !important; }
+      .hide-request-btn { transition: all 0.2s; cursor: pointer; }
+      .hide-request-btn:not(.pending):hover { color: #f87171 !important; border-color: #f87171 !important; }
       .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 100; }
       .input-field { background: #0f1629; border: 1px solid #1e2a45; border-radius: 8px; color: #c8d6f0; padding: 10px 14px; font-family: 'DM Mono', monospace; font-size: 13px; width: 100%; outline: none; transition: border-color 0.2s; }
       .input-field:focus { border-color: #60a5fa; }

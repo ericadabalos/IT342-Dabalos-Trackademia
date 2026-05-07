@@ -6,6 +6,8 @@ import Dashboard from "./pages/Dashboard";
 import HistoryPage from "./pages/HistoryPage";
 import MyTasks from "./pages/MyTasks";
 import Study from "./pages/Study";
+import AdminDashboard from "./pages/AdminDashboard";
+import ProtectedRoute from "./components/ProtectedRoute";
 import "./App.css";
 
 function App() {
@@ -19,6 +21,7 @@ function App() {
           <Route path="/history" element={<HistoryPage />} />
           <Route path="/tasks" element={<MyTasks />} />
           <Route path="/study" element={<Study />} />
+          <Route path="/admin-dashboard" element={<ProtectedRoute requiredRole="ADMIN"><AdminDashboard /></ProtectedRoute>} />
         </Routes>
       </Router>
     </AuthProvider>

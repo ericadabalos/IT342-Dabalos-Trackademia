@@ -10,6 +10,7 @@ import edu.cit.dabalos.trackademia.dto.AuthResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.Optional;
@@ -25,6 +26,7 @@ public class AuthService {
 
     private BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
+    @Transactional
     public AuthResponse register(RegisterRequest request) {
         AuthResponse response = new AuthResponse();
         response.setTimestamp(Instant.now().toString());
@@ -94,12 +96,14 @@ public class AuthService {
         response.getData().getUser().setEmail(user.getEmail());
         response.getData().getUser().setFirstname(user.getFirstname());
         response.getData().getUser().setLastname(user.getLastname());
+        response.getData().getUser().setRole(user.getRole().toString());
         response.getData().setAccessToken(accessToken);
         response.getData().setRefreshToken(refreshToken);
 
         return response;
     }
 
+    @Transactional
     public AuthResponse login(LoginRequest request) {
         AuthResponse response = new AuthResponse();
         response.setTimestamp(Instant.now().toString());

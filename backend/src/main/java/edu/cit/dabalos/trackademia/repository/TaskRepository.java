@@ -8,6 +8,8 @@ import java.util.List;
 @Repository
 public interface TaskRepository extends JpaRepository<Task, Long> {
     List<Task> findByUserEmail(String userEmail);
-    
     List<Task> findByUserEmailAndStatus(String userEmail, String status);
+    List<Task> findByUserEmailAndHiddenFalse(String userEmail);
+    List<Task> findByUserEmailAndStatusAndHiddenFalse(String userEmail, String status);
+    List<Task> findByHideRequestedTrueOrderByHideRequestedAtDesc();
 }

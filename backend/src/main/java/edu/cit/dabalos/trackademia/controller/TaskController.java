@@ -1,12 +1,10 @@
 package edu.cit.dabalos.trackademia.controller;
 
 import edu.cit.dabalos.trackademia.entity.Task; 
-import edu.cit.dabalos.trackademia.repository.TaskRepository;
-import edu.cit.dabalos.trackademia.service.ActivityService;
+import edu.cit.dabalos.trackademia.service.TaskService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import java.security.Principal;
-import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -15,90 +13,56 @@ import java.util.List;
 public class TaskController {
 
     @Autowired
-    private TaskRepository taskRepository;
-
-    @Autowired
-    private ActivityService activityService;
+    private TaskService taskService;
 
     @GetMapping
     public List<Task> getAllTasks(Principal principal) {
-        // Auto-complete any overdue tasks
-        String userEmail = principal.getName();
-        List<Task> allTasks = taskRepository.findByUserEmail(userEmail);
-        
-        LocalDate today = LocalDate.now();
-        
-        for (Task task : allTasks) {
-            // Only check pending tasks
-            if ("pending".equals(task.getStatus())) {
-                try {
-                    LocalDate deadlineDate = LocalDate.parse(task.getDeadline());
-                    // If deadline is before today, auto-complete it
-                    if (deadlineDate.isBefore(today)) {
-                        task.setStatus("completed");
-                        taskRepository.save(task);
-                        activityService.logTaskAutoCompletion(userEmail, task.getTitle(), task.getId());
-                    }
-                } catch (Exception e) {
-                    System.err.println("Error parsing deadline for task: " + task.getId());
-                }
-            }
-        }
-        
-        return taskRepository.findByUserEmail(userEmail);
+        return taskService.getAllTasks(principal.getName());
     }
 
     @GetMapping("/completed")
     public List<Task> getCompletedTasks(Principal principal) {
-        return taskRepository.findByUserEmailAndStatus(principal.getName(), "completed");
+        return taskService.getCompletedTasks(principal.getName());
     }
 
     @PostMapping
     public Task createTask(@RequestBody Task task, Principal principal) {
-        if (task.getStatus() == null) {
-            task.setStatus("pending");
-        }
-        
-        task.setUserEmail(principal.getName()); 
-        Task savedTask = taskRepository.save(task);
-        
-        // Log the activity
-        activityService.logTaskCreation(principal.getName(), task.getTitle(), savedTask.getId());
-        
-        return savedTask;
+        return taskService.createTask(task, principal.getName());
     }
 
     @PutMapping("/{id}/complete")
     public Task completeTask(@PathVariable Long id, Principal principal) {
-        Task task = taskRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Task not found with id: " + id));
-        //Changed to "completed"
-        task.setStatus("completed");
-        Task completedTask = taskRepository.save(task);
-        
-        // Log the activity
-        activityService.logTaskCompletion(principal.getName(), task.getTitle(), id);
-        
-        return completedTask;
+        return taskService.completeTask(id, principal.getName());
     }
 
-    //handles updating an existing task
+    @PutMapping("/{id}/request-hide")
+    public Task requestHideTask(@PathVariable Long id, Principal principal) {
+        return taskService.requestHideTask(id, principal.getName());
+    }
+
+    @GetMapping("/hide-requests")
+    public List<Task> getHideRequests(Principal principal) {
+        return taskService.getPendingHideRequests(principal.getName());
+    }
+
+    @PutMapping("/{id}/approve-hide")
+    public Task approveHideRequest(@PathVariable Long id, @RequestBody(required = false) java.util.Map<String, String> payload, Principal principal) {
+        String message = payload != null ? payload.get("message") : null;
+        return taskService.approveHideRequest(id, principal.getName(), message);
+    }
+
+    @PutMapping("/{id}/deny-hide")
+    public Task denyHideRequest(@PathVariable Long id, Principal principal) {
+        return taskService.denyHideRequest(id, principal.getName());
+    }
+
     @PutMapping("/{id}")
     public Task updateTask(@PathVariable Long id, @RequestBody Task updatedTask, Principal principal) {
-        Task task = taskRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Task not found"));
-                
-        task.setTitle(updatedTask.getTitle());
-        task.setDescription(updatedTask.getDescription());
-        task.setDeadline(updatedTask.getDeadline());
-        task.setSubject(updatedTask.getSubject());
-        task.setPriority(updatedTask.getPriority());
-        
-        Task savedTask = taskRepository.save(task);
-        
-        // Log the activity
-        activityService.logTaskEdit(principal.getName(), task.getTitle(), id);
-        
-        return savedTask;
+        return taskService.updateTask(id, updatedTask, principal.getName());
+    }
+
+    @DeleteMapping("/{id}")
+    public void deleteTask(@PathVariable Long id, Principal principal) {
+        taskService.deleteTask(id, principal.getName());
     }
 }

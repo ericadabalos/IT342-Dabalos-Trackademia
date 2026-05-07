@@ -30,7 +30,12 @@ function Login() {
 
       if (data.success) {
         login(data.data.user, data.data.accessToken);
-        navigate("/dashboard");
+        // Redirect based on role
+        if (data.data.user.role === "ADMIN") {
+          navigate("/admin-dashboard");
+        } else {
+          navigate("/dashboard");
+        }
       } else {
         setError(data.error.message);
       }
