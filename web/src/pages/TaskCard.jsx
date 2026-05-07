@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { formatDeadline, SUBJECT_COLORS, PRIORITY_STYLES } from "./constants";
+import { apiService } from "../services/apiService";
 
 //changed onDelete to onEdit here
 export default function TaskCard({ task, onComplete, onEdit, completingId }) {
@@ -7,9 +8,16 @@ export default function TaskCard({ task, onComplete, onEdit, completingId }) {
   const subColor = SUBJECT_COLORS[task.subject] || SUBJECT_COLORS.default;
   const pri = PRIORITY_STYLES[task.priority];
   
+  const [isHidePending, setIsHidePending] = useState(task.hideRequested || false);
+  const [isRequestingHide, setIsRequestingHide] = useState(false);
+
+  useEffect(() => {
+    setIsHidePending(task.hideRequested || false);
+  }, [task.hideRequested]);
+
   const isCompleting = completingId === task.id;
-  const isDone = task.status === "completed"; 
-  const isOverdue = task.displayStatus === "overdue"; 
+  const isDone = task.status === "completed";
+  const isOverdue = task.displayStatus === "overdue" || (task.status !== "completed" && new Date(task.deadline + "T00:00:00") < new Date());
 
   return (
     <div className={`task-card${isCompleting ? " completing" : " fade-in"}`}
@@ -33,11 +41,34 @@ export default function TaskCard({ task, onComplete, onEdit, completingId }) {
           <div style={{ color: "#3d5278", fontSize: 12, lineHeight: 1.5 }}>{task.description}</div>
           {isDone && task.completedAt && <div style={{ color: "#2d3f5a", fontSize: 11, marginTop: 6 }}>Completed: {task.completedAt}</div>}
         </div>
-        <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+        <div style={{ display: "flex", gap: 6, flexShrink: 0, alignItems: "center" }}>
           {!isDone && (
             <button className="done-btn" onClick={() => onComplete(task.id)} disabled={isCompleting}
               style={{ background: "transparent", border: "1px solid #1e2a45", borderRadius: 8, color: "#3d5278", padding: "8px 14px", fontSize: 11, fontFamily: "'DM Mono',monospace", letterSpacing: 0.5 }}>
               {isCompleting ? "..." : "✓ Done"}
+            </button>
+          )}
+
+          {isOverdue && (
+            <button
+              className={`hide-request-btn${isHidePending ? " pending" : ""}`}
+              onClick={handleHideRequest}
+              disabled={isHidePending || isRequestingHide}
+              style={{
+                background: "transparent",
+                border: `1px solid ${isHidePending ? "#fbbf24" : "#4a6080"}`,
+                color: isHidePending ? "#fbbf24" : "#4a6080",
+                borderRadius: 8,
+                padding: "8px 12px",
+                fontSize: 11,
+                fontFamily: "'DM Mono',monospace",
+                cursor: isHidePending ? "not-allowed" : "pointer",
+                opacity: isHidePending ? 0.75 : 1,
+                whiteSpace: "nowrap",
+                transition: "all 0.2s"
+              }}
+            >
+              {isHidePending ? "Pending Approval" : "Request to Hide"}
             </button>
           )}
           
@@ -51,4 +82,21 @@ export default function TaskCard({ task, onComplete, onEdit, completingId }) {
       </div>
     </div>
   );
+
+  async function handleHideRequest(e) {
+    e.stopPropagation();
+    if (isHidePending || isRequestingHide) return;
+    setIsRequestingHide(true);
+    try {
+      console.log("[DEBUG] handleHideRequest", { taskId: task.id, token: localStorage.getItem("token") ? "present" : "missing" });
+      const result = await apiService.requestHideTask(task.id);
+      console.log("[DEBUG] requestHideTask result:", result);
+      setIsHidePending(true);
+    } catch (error) {
+      console.error("Hide request failed", error);
+      alert(error.message || "Hide request failed");
+    } finally {
+      setIsRequestingHide(false);
+    }
+  }
 }

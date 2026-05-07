@@ -60,7 +60,7 @@ input:focus {
 }
 
 button {
-  width: 100%;
+  width: auto;
   box-sizing: border-box; 
   padding: 12px;
   background: #1e1b8f;
@@ -73,6 +73,10 @@ button {
   font-size: 13px;
   margin-top: 10px;
   transition: opacity 0.2s;
+}
+
+.card button {
+  width: 100%;
 }
 
 button:hover {

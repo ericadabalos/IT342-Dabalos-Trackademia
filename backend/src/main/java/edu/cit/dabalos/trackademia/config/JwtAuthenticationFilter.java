@@ -27,6 +27,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             
         // 1. Get the token from the request header
         final String authHeader = request.getHeader("Authorization");
+        System.out.println("[DEBUG] JwtAuthFilter incoming: method=" + request.getMethod() + " uri=" + request.getRequestURI() + " AuthorizationPresent=" + (authHeader != null));
         String email = null;
         String jwt = null;
 
@@ -34,8 +35,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             jwt = authHeader.substring(7); // Remove "Bearer "
             try {
                 email = jwtUtil.getEmailFromToken(jwt);
+                System.out.println("[DEBUG] JwtAuthFilter parsed email=" + email);
             } catch (Exception e) {
-                System.out.println("Token parsing failed: " + e.getMessage());
+                System.out.println("[DEBUG] Token parsing failed: " + e.getMessage());
             }
         }
 
@@ -43,7 +45,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             
             // 3. Validate the token
-            if (jwtUtil.validateToken(jwt)) {
+            boolean valid = jwtUtil.validateToken(jwt);
+            System.out.println("[DEBUG] JwtAuthFilter validateToken=" + valid + " for email=" + email);
+            if (valid) {
                 // 4. Create the authentication object and place it in the Spring Security Context
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         email, null, new ArrayList<>()); //use email as the principal

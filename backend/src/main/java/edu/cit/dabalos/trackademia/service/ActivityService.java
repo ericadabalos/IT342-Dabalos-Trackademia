@@ -4,6 +4,7 @@ import edu.cit.dabalos.trackademia.entity.Activity;
 import edu.cit.dabalos.trackademia.repository.ActivityRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
@@ -12,6 +13,7 @@ public class ActivityService {
     @Autowired
     private ActivityRepository activityRepository;
 
+    @Transactional
     public Activity createActivity(String userEmail, String text, String type, String taskTitle, Long taskId) {
         Activity activity = new Activity(userEmail, text, type, taskTitle, taskId);
         return activityRepository.save(activity);
@@ -39,6 +41,14 @@ public class ActivityService {
 
     public void logTaskDeletion(String userEmail, String taskTitle) {
         createActivity(userEmail, "Deleted: " + taskTitle, "delete", taskTitle, null);
+    }
+
+    public void logHideRequestApproval(String adminEmail, String taskTitle, Long taskId) {
+        createActivity(adminEmail, "Approved hide request for: " + taskTitle, "admin", taskTitle, taskId);
+    }
+
+    public void logHideRequestDenial(String adminEmail, String taskTitle, Long taskId) {
+        createActivity(adminEmail, "Denied hide request for: " + taskTitle, "admin", taskTitle, taskId);
     }
 
     public void logLogin(String userEmail) {

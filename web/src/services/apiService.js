@@ -1,72 +1,115 @@
-const BASE_URL = "http://localhost:8086/api";
+const BASE_URL = 'http://localhost:8086/api';
 
-// helper function completely hidden from the UI components
+// helper function hidden from UI components
 function getHeaders() {
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem('token');
   return {
-    "Content-Type": "application/json",
-    ...(token ? { "Authorization": `Bearer ${token}` } : {})
+    'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
 }
 
 // the facade
 export const apiService = {
-  
   login: async (email, password) => {
     const response = await fetch(`${BASE_URL}/auth/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password })
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
     });
-    if (!response.ok) throw new Error("Login failed");
+    if (!response.ok) throw new Error('Login failed');
     return response.json();
   },
 
   getTasks: async () => {
     const response = await fetch(`${BASE_URL}/tasks`, { headers: getHeaders() });
-    if (!response.ok) throw new Error("Failed to fetch tasks");
+    if (!response.ok) throw new Error('Failed to fetch tasks');
     return response.json();
   },
 
   createTask: async (taskData) => {
     const response = await fetch(`${BASE_URL}/tasks`, {
-      method: "POST",
+      method: 'POST',
       headers: getHeaders(),
-      body: JSON.stringify(taskData)
+      body: JSON.stringify(taskData),
     });
-    if (!response.ok) throw new Error("Failed to create task");
+    if (!response.ok) throw new Error('Failed to create task');
     return response.json();
   },
 
   completeTask: async (taskId) => {
     const response = await fetch(`${BASE_URL}/tasks/${taskId}/complete`, {
-      method: "PUT",
-      headers: getHeaders()
+      method: 'PUT',
+      headers: getHeaders(),
     });
-    if (!response.ok) throw new Error("Failed to update task");
+    if (!response.ok) throw new Error('Failed to update task');
     return response.json();
   },
 
+  requestHideTask: async (taskId) => {
+    const resp = await fetch(`${BASE_URL}/tasks/${taskId}/request-hide`, {
+      method: 'PUT',
+      headers: getHeaders(),
+    });
+    if (!resp.ok) {
+      const text = await resp.text().catch(() => '<no body>');
+      console.error('requestHideTask failed', { status: resp.status, body: text });
+      throw new Error(`requestHideTask failed: ${resp.status}`);
+    }
+    return await resp.json();
+  },
+
+  getHideRequests: async () => {
+    const resp = await fetch(`${BASE_URL}/tasks/hide-requests`, {
+      method: 'GET',
+      headers: getHeaders(),
+    });
+    if (!resp.ok) throw new Error('getHideRequests failed');
+    return await resp.json();
+  },
+
+  approveHideRequest: async (taskId, message) => {
+    const resp = await fetch(`${BASE_URL}/tasks/${taskId}/approve-hide`, {
+      method: 'PUT',
+      headers: getHeaders(),
+      body: JSON.stringify({ message }),
+    });
+    if (!resp.ok) {
+      const text = await resp.text().catch(() => '<no body>');
+      console.error('approveHideRequest failed', { status: resp.status, body: text });
+      throw new Error('approveHideRequest failed');
+    }
+    return await resp.json();
+  },
+
+  denyHideRequest: async (taskId) => {
+    const resp = await fetch(`${BASE_URL}/tasks/${taskId}/deny-hide`, {
+      method: 'PUT',
+      headers: getHeaders(),
+    });
+    if (!resp.ok) throw new Error('denyHideRequest failed');
+    return await resp.json();
+  },
 
   updateTask: async (taskId, updatedTask) => {
     const response = await fetch(`${BASE_URL}/tasks/${taskId}`, {
-      method: "PUT",
+      method: 'PUT',
       headers: getHeaders(),
-      body: JSON.stringify(updatedTask)
+      body: JSON.stringify(updatedTask),
     });
-    if (!response.ok) throw new Error("Failed to update task");
+    if (!response.ok) throw new Error('Failed to update task');
     return response.json();
   },
 
   getActivities: async () => {
     const response = await fetch(`${BASE_URL}/activities`, { headers: getHeaders() });
-    if (!response.ok) throw new Error("Failed to fetch activities");
+    if (!response.ok) throw new Error('Failed to fetch activities');
     return response.json();
   },
 
   getCompletedTasks: async () => {
     const response = await fetch(`${BASE_URL}/tasks/completed`, { headers: getHeaders() });
-    if (!response.ok) throw new Error("Failed to fetch completed tasks");
+    if (!response.ok) throw new Error('Failed to fetch completed tasks');
     return response.json();
-  }
+  },
 };

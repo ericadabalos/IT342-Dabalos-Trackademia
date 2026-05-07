@@ -152,39 +152,43 @@ export default function Dashboard() {
       <main style={{ marginLeft: 220, flex: 1, display: "flex", gap: 0, height: "100vh", overflow: "hidden" }}>
 
         {/* TASK BOARD */}
-        <section style={{ flex: 1, minWidth: 0, padding: "32px 40px", overflowY: "auto", borderRight: "1px solid #1a2236" }}>
+        <section style={{ flex: 1, minWidth: 0, padding: "32px 40px", overflow: "hidden", borderRight: "1px solid #1a2236", display: "flex", flexDirection: "column", height: "100%" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 32 }}>
             <div>
               <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: 28, fontWeight: 800, color: "#e2eaf8", letterSpacing: -0.5 }}>Task Board</h1>
               <div style={{ color: "#4a6080", fontSize: 13, marginTop: 4 }}>{new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</div>
             </div>
             
-            <button onClick={() => setShowModal(true)} style={{ whiteSpace: "nowrap", width: "fit-content", background: "linear-gradient(135deg,#3b82f6,#6366f1)", border: "none", borderRadius: 8, color: "#fff", padding: "10px 20px", fontSize: 13, fontFamily: "'Inter', sans-serif", cursor: "pointer", fontWeight: 600, display: "flex", alignItems: "center", gap: 8, boxShadow: "0 4px 12px rgba(59, 130, 246, 0.3)", flexShrink: 0 }}>
+            <button onClick={() => setShowModal(true)} style={{ whiteSpace: "nowrap", width: "fit-content", background: "linear-gradient(135deg,#3b82f6,#6366f1)", border: "none",
+               borderRadius: 8, color: "#fff", padding: "10px 20px", fontSize: 13, fontFamily: "'Inter', sans-serif", cursor: "pointer", fontWeight: 600, display: "flex", alignItems: "center",
+               gap: 8, boxShadow: "0 4px 12px rgba(59, 130, 246, 0.3)", flexShrink: 0 }}>
               <span style={{ fontSize: 16, fontWeight: 400 }}>+</span> New Task
             </button>
           </div>
 
-          {pendingTasks.length === 0 ? (
-            <div style={{ textAlign: "center", padding: "60px 0", color: "#4a6080" }}>
-              <div style={{ fontSize: 40, marginBottom: 12 }}>🎉</div>
-              <div style={{ fontSize: 14, fontFamily: "'Inter', sans-serif" }}>All tasks completed!</div>
-            </div>
-          ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-              {pendingTasks.map(task => {
-                const currentStatus = checkStatus(task); 
-                return (
-                  <TaskCard 
-                    key={task.id} 
-                    task={{ ...task, displayStatus: currentStatus }} 
-                    onComplete={handleComplete} 
-                    onEdit={handleEditClick} 
-                    completingId={completingId} 
-                  />
-                );
-              })}
-            </div>
-          )}
+          <div style={{ display: "flex", flexDirection: "column", gap: 16, flex: 1, minHeight: 0, overflowY: "auto" }}>
+            {pendingTasks.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "60px 0", color: "#4a6080" }}>
+                <div style={{ fontSize: 40, marginBottom: 12 }}>🎉</div>
+                <div style={{ fontSize: 14, fontFamily: "'Inter', sans-serif" }}>All tasks completed!</div>
+              </div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                {pendingTasks.map(task => {
+                  const currentStatus = checkStatus(task);
+                  return (
+                    <TaskCard 
+                      key={task.id} 
+                      task={{ ...task, displayStatus: currentStatus }} 
+                      onComplete={handleComplete} 
+                      onEdit={handleEditClick} 
+                      completingId={completingId} 
+                    />
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </section>
 
         {/* RIGHT PANEL: ACTIVITY FEED */}
@@ -228,9 +232,7 @@ export default function Dashboard() {
                 </div>
                 <div style={{ flex: 1 }}>
                   <label style={{ color: "#4a6080", fontSize: 11, letterSpacing: 1, display: "block", marginBottom: 6, textTransform: "uppercase" }}>Subject</label>
-                  <select className="input-field" value={newTask.subject} onChange={e => setNewTask(p => ({...p, subject: e.target.value}))}>
-                    {["CS", "DBMS", "Math", "English", "Physics", "Other"].map(s => <option key={s}>{s}</option>)}
-                  </select>
+                  <input type="text" className="input-field" value={newTask.subject} onChange={e => setNewTask(p => ({...p, subject: e.target.value}))} placeholder="e.g. Math, CS, English" />
                 </div>
               </div>
               <div>

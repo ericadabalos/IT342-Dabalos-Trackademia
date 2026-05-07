@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"; 
+import { useState, useEffect, useRef } from "react"; 
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../AuthContext";
 import { SUBJECT_COLORS, LOG_ICONS } from "./constants";
@@ -6,10 +6,16 @@ import Sidebar from "./Sidebar";
 import { apiService } from "../services/apiService";
 import LoadingScreen from "./LoadingScreen";
 import GlobalStyles from "./GlobalStyles";
+import Toasts from "../components/Toast";
 
 export default function HistoryPage() {
   const [tasks, setTasks] = useState([]);
+  const [userTasks, setUserTasks] = useState([]);
   const [activities, setActivities] = useState([]);
+  const [toasts, setToasts] = useState([]);
+  const activitiesRef = useRef([]);
+  const [activeView, setActiveView] = useState("completed");
+  const [hideRequestPending, setHideRequestPending] = useState({});
   
   const [loading, setLoading] = useState(true);
   
@@ -21,9 +27,26 @@ export default function HistoryPage() {
       try {
         const tasksData = await apiService.getCompletedTasks();
         setTasks(tasksData);
-        
+
+        // Also fetch all user tasks to detect hideRequested flags for activities
+        const allUserTasks = await apiService.getTasks();
+        setUserTasks(allUserTasks);
+
         const activitiesData = await apiService.getActivities();
         setActivities(activitiesData);
+        activitiesRef.current = activitiesData;
+
+        // Initialize hideRequestPending map based on task.hideRequested
+        const initialPending = {};
+        activitiesData.forEach(act => {
+          if (act.taskId) {
+            const matching = allUserTasks.find(t => t.id === act.taskId);
+            if (matching && matching.hideRequested) {
+              initialPending[act.id] = true;
+            }
+          }
+        });
+        setHideRequestPending(initialPending);
       } catch (err) {
         console.error("Error fetching data:", err);
       } finally {
@@ -32,6 +55,39 @@ export default function HistoryPage() {
     };
     
     fetchData();
+  }, []);
+
+  // Poll for new activities (to show notification toasts)
+  useEffect(() => {
+    let mounted = true;
+    const poll = async () => {
+      try {
+        const latest = await apiService.getActivities();
+        if (!mounted) return;
+        // find new activities that we don't have yet
+        const knownIds = new Set(activitiesRef.current.map(a => a.id));
+        const newOnes = (latest || []).filter(a => !knownIds.has(a.id));
+        if (newOnes.length > 0) {
+          // show toasts for notification-type activities
+          newOnes.filter(a => a.type === 'notification').forEach(a => {
+            const id = `toast-${a.id}`;
+            setToasts(prev => [...prev, { id, title: 'Notification', message: a.text }]);
+            // auto-remove after 6s
+            setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 6000);
+          });
+          // update activities refs and state
+          activitiesRef.current = latest;
+          setActivities(latest);
+        }
+      } catch (e) {
+        // ignore polling errors
+      }
+    };
+
+    const handle = setInterval(poll, 8000);
+    // also run once shortly after mount
+    const kick = setTimeout(poll, 2000);
+    return () => { mounted = false; clearInterval(handle); clearTimeout(kick); };
   }, []);
 
   // Group activities by date
@@ -66,11 +122,32 @@ export default function HistoryPage() {
   };
 
   const byDate = groupActivitiesByDate(activities);
+  const overdueActivities = activities.filter(activity => activity.text.toLowerCase().includes("overdue"));
+  const overdueCount = overdueActivities.length;
   const dotColor = { complete: "#4ade80", add: "#60a5fa", auth: "#3d5278", delete: "#f87171" };
 
   const handleLogout = () => {
     logout();
     navigate("/");
+  };
+
+  const handleHideRequest = async (activityId, e) => {
+    e.stopPropagation();
+    // find the related activity and its task id, call API to request hide
+    const act = activities.find(a => a.id === activityId);
+    if (!act || !act.taskId) {
+      alert('Unable to find associated task for this activity');
+      return;
+    }
+
+    try {
+      setHideRequestPending(prev => ({ ...prev, [activityId]: true }));
+      await apiService.requestHideTask(act.taskId);
+    } catch (err) {
+      console.error('Failed to request hide for task', err);
+      setHideRequestPending(prev => ({ ...prev, [activityId]: false }));
+      alert('Failed to request hide');
+    }
   };
 
   if (loading) return <LoadingScreen />;
@@ -93,33 +170,108 @@ export default function HistoryPage() {
 
         <div style={{ display: "flex", gap: 24, alignItems: "flex-start" }}>
           
-          {/* Completed tasks List */}
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-              <h2 style={{ fontSize: 15, fontWeight: 700, color: "#e2eaf8" }}>Completed Tasks</h2>
-              <span style={{ background: "rgba(74,222,128,0.1)", color: "#4ade80", fontSize: 10, padding: "2px 8px", borderRadius: 10 }}>{tasks.length}</span>
+          {/* Completed tasks / Overdue toggle */}
+          <div style={{ flex: 1, minWidth: 0, maxHeight: "calc(100vh - 220px)", display: "flex", flexDirection: "column" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16, flexShrink: 0 }}>
+              <button type="button" onClick={() => setActiveView("completed")}
+                style={{
+                  background: activeView === "completed" ? "linear-gradient(135deg,#3b82f6,#6366f1)" : "transparent",
+                  color: activeView === "completed" ? "#fff" : "#4a6080",
+                  border: activeView === "completed" ? "none" : "1px solid #1e2a45",
+                  borderRadius: 999,
+                  padding: "8px 14px",
+                  cursor: "pointer",
+                  fontSize: 12,
+                  fontWeight: 700,
+                  whiteSpace: "nowrap"
+                }}>
+                Completed {tasks.length}
+              </button>
+              <button type="button" onClick={() => setActiveView("overdue")}
+                style={{
+                  background: activeView === "overdue" ? "rgba(248,113,113,0.18)" : "transparent",
+                  color: activeView === "overdue" ? "#f87171" : "#4a6080",
+                  border: activeView === "overdue" ? "1px solid #f87171" : "1px solid #1e2a45",
+                  borderRadius: 999,
+                  padding: "8px 14px",
+                  cursor: "pointer",
+                  fontSize: 12,
+                  fontWeight: 700,
+                  whiteSpace: "nowrap"
+                }}>
+                Overdue {overdueCount}
+              </button>
             </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              {tasks.length === 0 ? (
-                <div style={{ color: "#4a6080", fontSize: 13, padding: "20px", textAlign: "center" }}>No completed tasks yet</div>
-              ) : (
-                tasks.map(task => {
-                  const subColor = SUBJECT_COLORS[task.subject] || SUBJECT_COLORS.default;
-                  return (
-                    <div key={task.id} className="fade-in" style={{ background: "#0d1220", border: "1px solid #1e2a45", borderLeft: "3px solid #2d3f5a", borderRadius: 12, padding: "14px 16px" }}>
-                      <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
-                        <div style={{ width: 28, height: 28, borderRadius: "50%", background: "rgba(74,222,128,0.08)", border: "1px solid rgba(74,222,128,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, flexShrink: 0, marginTop: 2 }}>✅</div>
-                        <div style={{ flex: 1 }}>
-                          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
-                            <span style={{ background: `${subColor}15`, color: subColor, fontSize: 10, padding: "3px 8px", borderRadius: 10, fontWeight: 600 }}>{task.subject}</span>
+            <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: 10, paddingRight: 4 }}>
+              {activeView === "completed" ? (
+                tasks.length === 0 ? (
+                  <div style={{ color: "#4a6080", fontSize: 13, padding: "20px", textAlign: "center" }}>No completed tasks yet</div>
+                ) : (
+                  tasks.map(task => {
+                    const subColor = SUBJECT_COLORS[task.subject] || SUBJECT_COLORS.default;
+                    return (
+                      <div key={task.id} className="fade-in" style={{ background: "#0d1220", border: "1px solid #1e2a45", borderLeft: "3px solid #2d3f5a", borderRadius: 12, padding: "14px 16px" }}>
+                        <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+                          <div style={{ width: 28, height: 28, borderRadius: "50%", background: "rgba(74,222,128,0.08)", border: "1px solid rgba(74,222,128,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, flexShrink: 0, marginTop: 2 }}>✅</div>
+                          <div style={{ flex: 1 }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
+                              <span style={{ background: `${subColor}15`, color: subColor, fontSize: 10, padding: "3px 8px", borderRadius: 10, fontWeight: 600 }}>{task.subject}</span>
+                            </div>
+                            <div style={{ color: "#8da4c8", fontSize: 14, fontWeight: 600, textDecoration: "line-through", marginBottom: 3 }}>{task.title}</div>
+                            <div style={{ color: "#4a6080", fontSize: 11 }}>Deadline: {new Date(task.deadline).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</div>
                           </div>
-                          <div style={{ color: "#8da4c8", fontSize: 14, fontWeight: 600, textDecoration: "line-through", marginBottom: 3 }}>{task.title}</div>
-                          <div style={{ color: "#4a6080", fontSize: 11 }}>Deadline: {new Date(task.deadline).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</div>
+                        </div>
+                      </div>
+                    );
+                  })
+                )
+              ) : (
+                overdueActivities.length === 0 ? (
+                  <div style={{ color: "#4a6080", fontSize: 13, padding: "20px", textAlign: "center" }}>No overdue activities yet</div>
+                ) : (
+                  // filter overdue activities for tasks that still exist (not hidden)
+                  overdueActivities
+                    .filter(activity => {
+                      if (!activity.taskId) return true;
+                      return userTasks.some(t => t.id === activity.taskId);
+                    })
+                    .map(activity => (
+                    <div key={activity.id} className="fade-in" style={{ background: "#0d1220", border: "1px solid #1e2a45", borderLeft: "3px solid #f87171", borderRadius: 12, padding: "14px 16px" }}>
+                      <div style={{ display: "flex", alignItems: "flex-start", gap: 12, justifyContent: "space-between" }}>
+                        <div style={{ display: "flex", gap: 12, flex: 1 }}>
+                          <div style={{ width: 28, height: 28, borderRadius: "50%", background: "rgba(248,113,113,0.1)", border: "1px solid rgba(248,113,113,0.25)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, flexShrink: 0, marginTop: 2 }}>⚠️</div>
+                          <div style={{ flex: 1 }}>
+                            <div style={{ color: "#8da4c8", fontSize: 14, fontWeight: 600, marginBottom: 4 }}>{activity.text}</div>
+                            <div style={{ color: "#4a6080", fontSize: 11 }}>Recorded at {formatTime(activity.timestamp)}</div>
+                          </div>
+                        </div>
+                        <div style={{ flexShrink: 0 }}>
+                          {hideRequestPending[activity.id] ? (
+                            <div style={{ color: "#fbbf24", fontSize: 11, fontFamily: "'DM Mono',monospace", whiteSpace: "nowrap" }}>Pending Approval</div>
+                          ) : (
+                            <button
+                              onClick={(e) => handleHideRequest(activity.id, e)}
+                              style={{
+                                background: "transparent",
+                                border: "1px solid #4a6080",
+                                color: "#4a6080",
+                                borderRadius: 8,
+                                padding: "6px 10px",
+                                fontSize: 11,
+                                fontFamily: "'DM Mono',monospace",
+                                cursor: "pointer",
+                                whiteSpace: "nowrap",
+                                transition: "all 0.2s"
+                              }}
+                            >
+                              Request to Hide
+                            </button>
+                          )}
                         </div>
                       </div>
                     </div>
-                  );
-                })
+                  ))
+                )
               )}
             </div>
           </div>
