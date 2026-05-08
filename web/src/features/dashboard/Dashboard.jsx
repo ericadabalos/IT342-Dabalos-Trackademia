@@ -1,13 +1,13 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../AuthContext";
-import Sidebar from "./Sidebar";
-import TaskCard from "./TaskCard"; 
+import { useAuth } from "../auth/AuthContext";
+import Sidebar from "../../core/components/Sidebar";
+import TaskCard from "../tasks/TaskCard"; 
 import { formatDeadline, LOG_ICONS, SUBJECT_COLORS, PRIORITY_STYLES } from "./constants"; 
-import LoadingScreen from "./LoadingScreen";
-import GlobalStyles from "./GlobalStyles";
-import { ActivityFeed } from "./ActivityFeed"; 
-import { apiService } from "../services/apiService";
+import LoadingScreen from "../../core/components/LoadingScreen";
+import GlobalStyles from "../../core/styles/GlobalStyles";
+import { ActivityFeed } from "../activity/ActivityFeed"; 
+import { apiService } from "../../core/api/apiService";
 
 
 function checkStatus(task) {

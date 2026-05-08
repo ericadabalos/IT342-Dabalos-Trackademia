@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../AuthContext";
-import { apiService } from "../services/apiService";
-import GlobalStyles from "./GlobalStyles";
-import LoadingScreen from "./LoadingScreen";
+import { useAuth } from "../auth/AuthContext";
+import { apiService } from "../../core/api/apiService";
+import GlobalStyles from "../../core/styles/GlobalStyles";
+import LoadingScreen from "../../core/components/LoadingScreen";
 
 export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);

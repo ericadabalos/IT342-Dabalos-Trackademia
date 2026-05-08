@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef } from "react"; 
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../AuthContext";
-import { SUBJECT_COLORS, LOG_ICONS } from "./constants";
-import Sidebar from "./Sidebar"; 
-import { apiService } from "../services/apiService";
-import LoadingScreen from "./LoadingScreen";
-import GlobalStyles from "./GlobalStyles";
-import Toasts from "../components/Toast";
+import { useAuth } from "../auth/AuthContext";
+import { SUBJECT_COLORS, LOG_ICONS } from "../dashboard/constants";
+import Sidebar from "../../core/components/Sidebar"; 
+import { apiService } from "../../core/api/apiService";
+import LoadingScreen from "../../core/components/LoadingScreen";
+import GlobalStyles from "../../core/styles/GlobalStyles";
+import Toasts from "../../core/components/Toast";
 
 export default function HistoryPage() {
   const [tasks, setTasks] = useState([]);

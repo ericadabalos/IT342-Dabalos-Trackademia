@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { formatDeadline, SUBJECT_COLORS, PRIORITY_STYLES } from "./constants";
-import { apiService } from "../services/apiService";
+import { formatDeadline, SUBJECT_COLORS, PRIORITY_STYLES } from "../dashboard/constants";
+import { apiService } from "../../core/api/apiService";
 
 //changed onDelete to onEdit here
 export default function TaskCard({ task, onComplete, onEdit, completingId }) {

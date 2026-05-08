@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import Sidebar from "./Sidebar";
-import LoadingScreen from "./LoadingScreen";
+import Sidebar from "../../core/components/Sidebar";
+import LoadingScreen from "../../core/components/LoadingScreen";
 import styled from "styled-components";
-import GlobalStyles from "./GlobalStyles";
+import GlobalStyles from "../../core/styles/GlobalStyles";
 
 const PageContainer = styled.div`
   display: flex;

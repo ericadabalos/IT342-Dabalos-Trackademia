@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import Sidebar from "./Sidebar";
-import { ActivityFeed } from "./ActivityFeed";
+import Sidebar from "../../core/components/Sidebar";
+import { ActivityFeed } from "../activity/ActivityFeed";
 import TaskCard from "./TaskCard";
-import { PRIORITY_STYLES, SUBJECT_COLORS } from "./constants";
-import { apiService } from "../services/apiService";
+import { PRIORITY_STYLES, SUBJECT_COLORS } from "../dashboard/constants";
+import { apiService } from "../../core/api/apiService";
 import styled from "styled-components";
-import LoadingScreen from "./LoadingScreen";
-import GlobalStyles from "./GlobalStyles";
+import LoadingScreen from "../../core/components/LoadingScreen";
+import GlobalStyles from "../../core/styles/GlobalStyles";
 
 const PageContainer = styled.div`
   display: flex;

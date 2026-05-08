@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { LOG_ICONS } from "./constants";
+import { LOG_ICONS } from "../dashboard/constants";
 
 const ActivityContainer = styled.div`
   display: flex;
