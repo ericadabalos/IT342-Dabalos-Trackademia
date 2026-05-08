@@ -1,7 +1,5 @@
-package edu.cit.dabalos.trackademia.service;
+package edu.cit.dabalos.trackademia.features.activity;
 
-import edu.cit.dabalos.trackademia.entity.Activity;
-import edu.cit.dabalos.trackademia.repository.ActivityRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

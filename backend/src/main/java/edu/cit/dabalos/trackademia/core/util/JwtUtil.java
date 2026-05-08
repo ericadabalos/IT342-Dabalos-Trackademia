@@ -1,6 +1,6 @@
-package edu.cit.dabalos.trackademia.util;
+package edu.cit.dabalos.trackademia.core.util;
 
-import edu.cit.dabalos.trackademia.entity.User;
+import edu.cit.dabalos.trackademia.features.auth.User;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;

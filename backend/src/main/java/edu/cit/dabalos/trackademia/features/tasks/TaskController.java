@@ -1,7 +1,6 @@
-package edu.cit.dabalos.trackademia.controller;
+package edu.cit.dabalos.trackademia.features.tasks;
 
-import edu.cit.dabalos.trackademia.entity.Task; 
-import edu.cit.dabalos.trackademia.service.TaskService;
+import edu.cit.dabalos.trackademia.features.tasks.Task;import edu.cit.dabalos.trackademia.features.tasks.TaskService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import java.security.Principal;

@@ -1,6 +1,5 @@
-package edu.cit.dabalos.trackademia.repository;
+package edu.cit.dabalos.trackademia.features.activity;
 
-import edu.cit.dabalos.trackademia.entity.Activity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import java.util.List;

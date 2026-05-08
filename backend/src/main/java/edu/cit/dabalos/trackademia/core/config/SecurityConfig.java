@@ -1,4 +1,4 @@
-package edu.cit.dabalos.trackademia.config;
+package edu.cit.dabalos.trackademia.core.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;

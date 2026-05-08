@@ -1,6 +1,6 @@
-package edu.cit.dabalos.trackademia.config;
+package edu.cit.dabalos.trackademia.core.config;
 
-import edu.cit.dabalos.trackademia.util.JwtUtil;
+import edu.cit.dabalos.trackademia.core.util.JwtUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

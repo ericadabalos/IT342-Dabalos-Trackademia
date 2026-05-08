@@ -1,7 +1,5 @@
-package edu.cit.dabalos.trackademia.controller;
+package edu.cit.dabalos.trackademia.features.activity;
 
-import edu.cit.dabalos.trackademia.entity.Activity;
-import edu.cit.dabalos.trackademia.service.ActivityService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import java.security.Principal;

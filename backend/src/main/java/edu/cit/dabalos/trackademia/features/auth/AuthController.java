@@ -1,10 +1,6 @@
-package edu.cit.dabalos.trackademia.controller;
+package edu.cit.dabalos.trackademia.features.auth;
 
-import edu.cit.dabalos.trackademia.service.AuthService;
-import edu.cit.dabalos.trackademia.service.ActivityService;
-import edu.cit.dabalos.trackademia.dto.RegisterRequest;
-import edu.cit.dabalos.trackademia.dto.LoginRequest;
-import edu.cit.dabalos.trackademia.dto.AuthResponse;
+import edu.cit.dabalos.trackademia.features.activity.ActivityService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

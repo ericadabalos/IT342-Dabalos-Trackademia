@@ -1,9 +1,8 @@
-package edu.cit.dabalos.trackademia.service;
+package edu.cit.dabalos.trackademia.features.tasks;
 
-import edu.cit.dabalos.trackademia.entity.Task;
-import edu.cit.dabalos.trackademia.entity.User;
-import edu.cit.dabalos.trackademia.repository.TaskRepository;
-import edu.cit.dabalos.trackademia.repository.UserRepository;
+import edu.cit.dabalos.trackademia.features.tasks.Task;import edu.cit.dabalos.trackademia.features.auth.User;
+import edu.cit.dabalos.trackademia.features.auth.UserRepository;
+import edu.cit.dabalos.trackademia.features.activity.ActivityService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

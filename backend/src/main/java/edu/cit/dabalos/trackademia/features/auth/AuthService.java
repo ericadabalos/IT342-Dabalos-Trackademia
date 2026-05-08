@@ -1,11 +1,6 @@
-package edu.cit.dabalos.trackademia.service;
+package edu.cit.dabalos.trackademia.features.auth;
 
-import edu.cit.dabalos.trackademia.entity.User;
-import edu.cit.dabalos.trackademia.repository.UserRepository;
-import edu.cit.dabalos.trackademia.util.JwtUtil;
-import edu.cit.dabalos.trackademia.dto.RegisterRequest;
-import edu.cit.dabalos.trackademia.dto.LoginRequest;
-import edu.cit.dabalos.trackademia.dto.AuthResponse;
+import edu.cit.dabalos.trackademia.core.util.JwtUtil;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;

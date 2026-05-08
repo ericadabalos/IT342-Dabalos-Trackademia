@@ -1,4 +1,4 @@
-package edu.cit.dabalos.trackademia.entity;
+package edu.cit.dabalos.trackademia.features.auth;
 
 import jakarta.persistence.*;
 import lombok.Data;

@@ -1,4 +1,4 @@
-package edu.cit.dabalos.trackademia.dto;
+package edu.cit.dabalos.trackademia.features.auth;
 
 import lombok.Data;
 
