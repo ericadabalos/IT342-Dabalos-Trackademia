@@ -1,7 +1,7 @@
 package edu.cit.dabalos.trackademia;
 
-import edu.cit.dabalos.trackademia.entity.User;
-import edu.cit.dabalos.trackademia.repository.UserRepository;
+import edu.cit.dabalos.trackademia.features.auth.User;
+import edu.cit.dabalos.trackademia.features.auth.UserRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

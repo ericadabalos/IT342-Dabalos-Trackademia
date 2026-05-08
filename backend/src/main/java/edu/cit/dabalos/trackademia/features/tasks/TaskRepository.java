@@ -1,0 +1,14 @@
+package edu.cit.dabalos.trackademia.features.tasks;
+
+import edu.cit.dabalos.trackademia.features.tasks.Task;import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+import java.util.List;
+
+@Repository
+public interface TaskRepository extends JpaRepository<Task, Long> {
+    List<Task> findByUserEmail(String userEmail);
+    List<Task> findByUserEmailAndStatus(String userEmail, String status);
+    List<Task> findByUserEmailAndHiddenFalse(String userEmail);
+    List<Task> findByUserEmailAndStatusAndHiddenFalse(String userEmail, String status);
+    List<Task> findByHideRequestedTrueOrderByHideRequestedAtDesc();
+}
