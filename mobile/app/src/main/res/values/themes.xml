@@ -1,0 +1,26 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Base.Theme.Trackademia" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Customize your light theme here. -->
+        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryVariant">@color/colorPrimaryVariant</item>
+        <item name="colorOnPrimary">@color/white</item>
+        
+        <item name="android:colorBackground">@color/colorBackground</item>
+        <item name="colorSurface">@color/colorCard</item>
+        <item name="android:textColorPrimary">@color/textColorPrimary</item>
+        <item name="android:textColorSecondary">@color/textColorSecondary</item>
+        
+        <!-- Bottom Nav Colors -->
+        <item name="bottomNavigationStyle">@style/Widget.Trackademia.BottomNavigationView</item>
+    </style>
+
+    <style name="Theme.Trackademia" parent="Base.Theme.Trackademia" />
+
+    <style name="Widget.Trackademia.BottomNavigationView" parent="Widget.MaterialComponents.BottomNavigationView">
+        <item name="backgroundTint">@color/colorCard</item>
+        <item name="itemIconTint">@color/textColorSecondary</item>
+        <item name="itemTextColor">@color/textColorSecondary</item>
+    </style>
+</resources>
